@@ -294,3 +294,4 @@ DebugGraph AI was designed with **graceful fault isolation**:
 Traditional tools (Datadog, New Relic, Grafana) are **passive monitoring dashboards**: they show charts of spikes and trigger alert webhooks, but leave all cognitive triage, log searching, dependency cross-referencing, and root cause diagnosis to tired human engineers at 3 AM.
 
 DebugGraph AI is an **active cognitive investigation engine**. When an alert fires, it does not merely display a dashboard—it autonomously ingests the logs, retrieves semantic and lexical evidence, inspects code commits, computes the topological blast radius, validates facts against raw data, and delivers an evidence-grounded diagnosis with actionable fixes. It transforms incident response from reactive fire-fighting into automated, mathematically verified engineering triage.
+

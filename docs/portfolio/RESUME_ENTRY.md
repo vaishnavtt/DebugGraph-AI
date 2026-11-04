@@ -48,3 +48,4 @@ Tailored, impact-driven bullet points for software engineering, AI engineering, 
 - **Backend Architecture**: Python 3.11, FastAPI, Pydantic v2, SQLAlchemy 2.0, PostgreSQL, SQLite, Uvicorn, Pytest, HTTPX.
 - **Frontend & Visualization**: React 18, TypeScript, Vite, Tailwind CSS, React Flow (@xyflow/react), Recharts, Lucide Icons.
 - **DevOps, Testing & Quality**: Docker, Docker Compose, Playwright E2E, Git, GitHub API v3, Security Secret Auditing.
+

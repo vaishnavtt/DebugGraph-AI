@@ -164,3 +164,4 @@ The frontend is built with React 18, TypeScript, Tailwind CSS, Recharts, and Rea
 - **9 Automated Playwright End-to-End Tests** executing in headless Microsoft Edge with zero failures.
 - **Zero Hallucination Tolerance**: EvidenceValidatorAgent ensures every cited chunk corresponds to ground-truth logs.
 - **Zero Credential Leaks**: Rigorous `.gitignore` policies, placeholder `.env.example` templates, and environment variable shielding.
+

@@ -136,3 +136,4 @@ A structured, rehearsed walkthrough designed for hackathon judges, technical hir
 | **External WiFi / Network drops** | The local backend automatically switches to SQLite fallback (`debuggraph_local.db`) and local Qdrant disk storage; all search and graph features run 100% offline. |
 | **Gemini LLM API rate limit / slow** | The system automatically fails over from `gemini-3.5-flash-lite` to `gemini-3.5-flash`. If offline, use the cached mock investigation result. |
 | **Demo time runs short (3 minutes)** | Skip Log Upload and GitHub Diff; jump directly from Dashboard $\to$ Multi-Agent Investigation $\to$ Service Graph Blast Radius $\to$ Benchmark Results. |
+
