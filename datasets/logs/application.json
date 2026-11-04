@@ -1,0 +1,44 @@
+[
+  {
+    "timestamp": "2026-11-01T10:14:50Z",
+    "level": "INFO",
+    "service": "order-service",
+    "message": "Order service v3.1.0 boot complete",
+    "request_id": "init-001"
+  },
+  {
+    "timestamp": "2026-11-01T10:15:02Z",
+    "level": "INFO",
+    "service": "order-service",
+    "message": "Received order placement request for cart_id=c_910",
+    "request_id": "req-ord-5501",
+    "user_id": "usr_8812"
+  },
+  {
+    "timestamp": "2026-11-01T10:15:04Z",
+    "level": "WARNING",
+    "service": "order-service",
+    "message": "Item inventory low: sku=SKU-9901 available=2 reserved=2",
+    "request_id": "req-ord-5501"
+  },
+  {
+    "timestamp": "2026-11-01T10:15:15Z",
+    "level": "ERROR",
+    "service": "order-service",
+    "message": "Failed to complete order reservation due to downstream payment timeout",
+    "request_id": "req-ord-5501",
+    "exception": {
+      "type": "DownstreamServiceError",
+      "message": "Payment service responded with HTTP 504 Gateway Timeout",
+      "stack_trace": "Traceback (most recent call last):\n  File \"/app/services/order.py\", line 210, in submit_order\n    payment_client.charge(cart_id)\nDownstreamServiceError: Payment service responded with HTTP 504 Gateway Timeout"
+    }
+  },
+  {
+    "timestamp": "2026-11-01T10:15:18Z",
+    "level": "CRITICAL",
+    "service": "order-service",
+    "message": "Order queue processing stalled: 140 messages backed up in DLQ",
+    "component": "order_consumer"
+  }
+]
+

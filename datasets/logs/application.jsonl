@@ -1,0 +1,6 @@
+{"timestamp": "2026-11-01T10:14:40Z", "level": "INFO", "service": "auth-service", "message": "Auth service initialized with RSA256 key rotation", "correlation_id": "corr-init-10"}
+{"timestamp": "2026-11-01T10:15:01Z", "level": "INFO", "service": "auth-service", "message": "JWT token issued for user=usr_4401", "correlation_id": "corr-auth-991"}
+{"timestamp": "2026-11-01T10:15:08Z", "level": "WARNING", "service": "auth-service", "message": "Rate limit threshold reached for IP 198.51.100.42 (45 req/min)", "correlation_id": "corr-auth-992"}
+{"timestamp": "2026-11-01T10:15:15Z", "level": "ERROR", "service": "auth-service", "message": "Redis session store lookup failed after 3 retries", "correlation_id": "corr-auth-993", "error": "ConnectionRefusedError: Error connecting to redis-cluster:6379"}
+{"timestamp": "2026-11-01T10:15:19Z", "level": "CRITICAL", "service": "auth-service", "message": "All authentication cluster nodes reporting Redis replica divergence", "cluster": "us-east-1"}
+
