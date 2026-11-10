@@ -3,28 +3,151 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-slate-950 text-slate-100 antialiased font-sans;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    @apply bg-ivory-50 text-slate-900 antialiased font-sans selection:bg-electric-500 selection:text-white;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-slate-900 font-bold tracking-tight;
   }
 }
 
-/* Custom scrollbar for dark UI */
+/* Apple-style Luxury Smooth Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #090d16;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 3px;
+  background: #E2D9C8;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #C5A059;
 }
 
+/* 3D Tactile Interactive Button Styles */
+.btn-3d {
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateZ(0);
+}
+
+.btn-3d:hover {
+  transform: translateY(-2px);
+}
+
+.btn-3d:active {
+  transform: translateY(1px);
+}
+
+/* Primary Electric Blue 3D Button */
+.btn-3d-primary {
+  background: linear-gradient(180deg, #1A75FF 0%, #0066FF 60%, #0052CC 100%);
+  box-shadow: 0 3px 0 #003D99, 0 8px 20px -2px rgba(0, 102, 255, 0.4), inset 0 1px 1px 0 rgba(255, 255, 255, 0.45);
+  color: #FFFFFF;
+}
+
+.btn-3d-primary:hover {
+  box-shadow: 0 4px 0 #003D99, 0 12px 24px -2px rgba(0, 102, 255, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.btn-3d-primary:active {
+  box-shadow: 0 1px 0 #003D99, 0 4px 8px rgba(0, 102, 255, 0.3), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Jacob & Co. Champagne Gold 3D Button */
+.btn-3d-gold {
+  background: linear-gradient(180deg, #E2C275 0%, #C5A059 55%, #A8823B 100%);
+  box-shadow: 0 3px 0 #7A5B20, 0 8px 20px -2px rgba(197, 160, 89, 0.45), inset 0 1px 1px 0 rgba(255, 255, 255, 0.6);
+  color: #1A1407;
+}
+
+.btn-3d-gold:hover {
+  box-shadow: 0 4px 0 #7A5B20, 0 12px 26px -2px rgba(197, 160, 89, 0.55), inset 0 1px 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.btn-3d-gold:active {
+  box-shadow: 0 1px 0 #7A5B20, 0 4px 10px rgba(197, 160, 89, 0.3), inset 0 1px 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Midnight Obsidian 3D Button */
+.btn-3d-midnight {
+  background: linear-gradient(180deg, #1E293B 0%, #0F172A 60%, #0A0E1A 100%);
+  box-shadow: 0 3px 0 #030712, 0 8px 20px -2px rgba(15, 23, 42, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+  color: #F8FAFC;
+}
+
+.btn-3d-midnight:hover {
+  box-shadow: 0 4px 0 #030712, 0 12px 24px -2px rgba(15, 23, 42, 0.45), inset 0 1px 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.btn-3d-midnight:active {
+  box-shadow: 0 1px 0 #030712, 0 4px 8px rgba(15, 23, 42, 0.2), inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Tactile Surface Button (Light/Ivory) */
+.btn-3d-surface {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAF7F0 100%);
+  box-shadow: 0 2px 0 #E2D9C8, 0 4px 12px rgba(28, 25, 23, 0.04), inset 0 1px 0 0 #FFFFFF;
+  color: #1E293B;
+  border: 1px solid rgba(226, 217, 200, 0.8);
+}
+
+.btn-3d-surface:hover {
+  box-shadow: 0 3px 0 #D5C7B0, 0 6px 16px rgba(28, 25, 23, 0.08), inset 0 1px 0 0 #FFFFFF;
+  border-color: #C5A059;
+}
+
+.btn-3d-surface:active {
+  box-shadow: 0 1px 0 #E2D9C8, 0 2px 6px rgba(28, 25, 23, 0.04);
+}
+
+/* Glass Surface with Specular Rim Lighting */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(235, 227, 211, 0.8);
+  box-shadow: 0 4px 24px -2px rgba(15, 23, 42, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+}
+
+.glass-panel-dark {
+  background: rgba(10, 14, 26, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Animations */
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.98) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeInScale 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

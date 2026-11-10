@@ -15,8 +15,11 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import {
+  Activity,
   AlertTriangle,
+  ArrowRight,
   Database,
+  Flame,
   Globe,
   Layers,
   Network,
@@ -24,14 +27,17 @@ import {
   RefreshCw,
   Server,
   ShieldAlert,
+  Sparkles,
   Zap,
 } from 'lucide-react';
 import { api } from '../services/api';
 import { BlastRadius, ServiceDetail } from '../types';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
+import { Button3D } from '../components/ui/Button3D';
+import { MotionReveal } from '../components/ui/MotionReveal';
 
-// Custom Node Component for Service Topology
+// Custom Node Component with Luxury Horological & Porcelain Aesthetic
 const CustomServiceNode: React.FC<NodeProps> = ({ data, selected }) => {
   const isDatabase = data.type === 'database';
   const isApi = data.type === 'api';
@@ -39,31 +45,68 @@ const CustomServiceNode: React.FC<NodeProps> = ({ data, selected }) => {
 
   return (
     <div
-      className={`px-4 py-3 rounded-xl border font-mono transition-all shadow-lg ${
+      className={`px-4 py-3 rounded-2xl border-2 transition-all duration-300 min-w-[180px] shadow-tactile-surface ${
         isImpacted
-          ? 'bg-rose-950/80 border-rose-500 text-rose-200 shadow-rose-900/40 ring-2 ring-rose-500/50'
+          ? 'bg-rose-50/95 border-rose-500 text-rose-950 shadow-glow-rose ring-4 ring-rose-300/40'
           : selected
-          ? 'bg-indigo-950/90 border-cyan-400 text-white shadow-cyan-500/20 ring-2 ring-cyan-400/40'
-          : 'bg-dark-900 border-slate-700/80 text-slate-200 hover:border-slate-500'
+          ? 'bg-white border-electric-600 text-midnight-950 ring-4 ring-electric-500/20 shadow-tactile-primary'
+          : isDatabase
+          ? 'bg-white border-emerald-300/80 text-midnight-950 hover:border-emerald-500'
+          : isApi
+          ? 'bg-white border-gold-300/80 text-midnight-950 hover:border-gold-500'
+          : 'bg-white border-ivory-300/90 text-midnight-950 hover:border-midnight-500'
       }`}
     >
-      <Handle type="target" position={Position.Top} className="!bg-slate-400 !w-2 !h-2" />
-      <div className="flex items-center gap-2">
-        {isDatabase ? (
-          <Database className="w-4 h-4 text-emerald-400 shrink-0" />
-        ) : isApi ? (
-          <Globe className="w-4 h-4 text-amber-400 shrink-0" />
-        ) : (
-          <Server className="w-4 h-4 text-indigo-400 shrink-0" />
-        )}
-        <div>
-          <div className="text-xs font-bold leading-tight truncate max-w-[140px]">{data.label as string}</div>
-          <div className="text-[10px] text-slate-400 capitalize">
-            {isDatabase ? 'Database' : isApi ? 'API Endpoint' : (data.tier as string) || 'Service'}
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="!bg-midnight-400 !border-white !w-2.5 !h-2.5"
+      />
+      <div className="flex items-center gap-2.5">
+        <div
+          className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${
+            isImpacted
+              ? 'bg-rose-500 text-white'
+              : isDatabase
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              : isApi
+              ? 'bg-gold-50 text-gold-700 border border-gold-200'
+              : 'bg-midnight-950 text-gold-400 border border-midnight-900'
+          }`}
+        >
+          {isDatabase ? (
+            <Database className="w-4 h-4" />
+          ) : isApi ? (
+            <Globe className="w-4 h-4" />
+          ) : (
+            <Server className="w-4 h-4" />
+          )}
+        </div>
+        <div className="overflow-hidden">
+          <div className="text-xs font-display font-bold truncate text-midnight-950">
+            {data.label as string}
+          </div>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                isImpacted
+                  ? 'bg-rose-500 animate-pulse'
+                  : isDatabase
+                  ? 'bg-emerald-500'
+                  : 'bg-electric-500'
+              }`}
+            />
+            <span className="text-[10px] font-mono text-midnight-500 uppercase tracking-wider">
+              {data.tier as string}
+            </span>
           </div>
         </div>
       </div>
-      <Handle type="source" position={Position.Bottom} className="!bg-cyan-400 !w-2 !h-2" />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className="!bg-midnight-400 !border-white !w-2.5 !h-2.5"
+      />
     </div>
   );
 };
@@ -73,7 +116,6 @@ const nodeTypes = {
 };
 
 export const DependencyGraphPage: React.FC = () => {
-  // Graph Data
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [loading, setLoading] = useState(true);
@@ -81,114 +123,116 @@ export const DependencyGraphPage: React.FC = () => {
   const [blastRadius, setBlastRadius] = useState<BlastRadius | null>(null);
   const [graphHealthy, setGraphHealthy] = useState(true);
 
-  // Modal State
+  // Add Service Modal
   const [showAddServiceModal, setShowAddServiceModal] = useState(false);
-  const [showAddDepModal, setShowAddDepModal] = useState(false);
   const [newServiceName, setNewServiceName] = useState('');
   const [newServiceTier, setNewServiceTier] = useState('backend');
-  const [depSource, setDepSource] = useState('');
-  const [depTarget, setDepTarget] = useState('');
 
-  // Initial Seed Topology
   const loadGraph = useCallback(async () => {
     setLoading(true);
     try {
-      const health = await api.getGraphHealth().catch(() => ({ connected: false }));
+      const health = await api.getGraphHealth().catch(() => ({ connected: false } as any));
       setGraphHealthy(Boolean(health.connected));
 
-      // Build visual representation of microservices
       const initialNodes: Node[] = [
         {
-          id: 'checkout-service',
+          id: 'api-gateway',
           type: 'serviceNode',
-          position: { x: 250, y: 50 },
-          data: { label: 'checkout-service', tier: 'frontend', type: 'service' },
-        },
-        {
-          id: 'order-service',
-          type: 'serviceNode',
-          position: { x: 100, y: 160 },
-          data: { label: 'order-service', tier: 'backend', type: 'service' },
-        },
-        {
-          id: 'payment-service',
-          type: 'serviceNode',
-          position: { x: 400, y: 160 },
-          data: { label: 'payment-service', tier: 'backend', type: 'service' },
+          position: { x: 300, y: 30 },
+          data: { label: 'api-gateway', tier: 'gateway', type: 'service' },
         },
         {
           id: 'auth-service',
           type: 'serviceNode',
-          position: { x: 250, y: 280 },
+          position: { x: 100, y: 150 },
           data: { label: 'auth-service', tier: 'core', type: 'service' },
+        },
+        {
+          id: 'payment-service',
+          type: 'serviceNode',
+          position: { x: 300, y: 150 },
+          data: { label: 'payment-service', tier: 'backend', type: 'service' },
+        },
+        {
+          id: 'notification-service',
+          type: 'serviceNode',
+          position: { x: 500, y: 150 },
+          data: { label: 'notification-service', tier: 'backend', type: 'service' },
         },
         {
           id: 'payments-db',
           type: 'serviceNode',
-          position: { x: 550, y: 280 },
-          data: { label: 'payments-db', tier: 'storage', type: 'database' },
+          position: { x: 200, y: 280 },
+          data: { label: 'payments-db (PostgreSQL)', tier: 'storage', type: 'database' },
         },
         {
           id: 'stripe-api',
           type: 'serviceNode',
-          position: { x: 550, y: 80 },
-          data: { label: 'Stripe Gateway', tier: 'external', type: 'api' },
+          position: { x: 420, y: 280 },
+          data: { label: 'Stripe Gateway (External)', tier: 'external', type: 'api' },
         },
       ];
 
       const initialEdges: Edge[] = [
         {
-          id: 'e-checkout-order',
-          source: 'checkout-service',
-          target: 'order-service',
-          label: 'DEPENDS_ON',
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#818cf8' },
-          style: { stroke: '#818cf8' },
+          id: 'e-gw-auth',
+          source: 'api-gateway',
+          target: 'auth-service',
+          label: 'Verifies JWT',
+          markerEnd: { type: MarkerType.ArrowClosed, color: '#0066FF' },
+          style: { stroke: '#0066FF', strokeWidth: 1.5 },
         },
         {
-          id: 'e-checkout-payment',
-          source: 'checkout-service',
+          id: 'e-gw-payment',
+          source: 'api-gateway',
           target: 'payment-service',
-          label: 'DEPENDS_ON',
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#818cf8' },
-          style: { stroke: '#818cf8' },
+          label: 'Processes Checkout',
+          markerEnd: { type: MarkerType.ArrowClosed, color: '#0066FF' },
+          style: { stroke: '#0066FF', strokeWidth: 2 },
         },
         {
-          id: 'e-order-auth',
-          source: 'order-service',
-          target: 'auth-service',
-          label: 'CALLS',
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#38bdf8' },
-          style: { stroke: '#38bdf8' },
-        },
-        {
-          id: 'e-payment-auth',
+          id: 'e-payment-notif',
           source: 'payment-service',
-          target: 'auth-service',
-          label: 'CALLS',
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#38bdf8' },
-          style: { stroke: '#38bdf8' },
+          target: 'notification-service',
+          label: 'Payment Completed Event',
+          markerEnd: { type: MarkerType.ArrowClosed, color: '#94A3B8' },
+          style: { stroke: '#94A3B8', strokeWidth: 1.5, strokeDasharray: '4 4' },
         },
         {
           id: 'e-payment-db',
           source: 'payment-service',
           target: 'payments-db',
-          label: 'CONNECTS_TO',
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#34d399' },
-          style: { stroke: '#34d399' },
+          label: 'ACID Ledger Tx',
+          markerEnd: { type: MarkerType.ArrowClosed, color: '#10B981' },
+          style: { stroke: '#10B981', strokeWidth: 1.5 },
         },
         {
           id: 'e-payment-stripe',
           source: 'payment-service',
           target: 'stripe-api',
-          label: 'CALLS',
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#fbbf24' },
-          style: { stroke: '#fbbf24' },
+          label: 'Charges Card',
+          markerEnd: { type: MarkerType.ArrowClosed, color: '#C5A059' },
+          style: { stroke: '#C5A059', strokeWidth: 2 },
         },
       ];
 
       setNodes(initialNodes);
       setEdges(initialEdges);
+
+      // Pre-select payment-service so blast radius analysis is immediately available
+      const defaultDetail: ServiceDetail = {
+        name: 'payment-service',
+        environment: 'production',
+        tier: 'backend',
+        status: 'active',
+        metadata: {},
+        upstream_dependencies: ['api-gateway'],
+        downstream_dependencies: ['notification-service'],
+        connected_databases: ['payments-db (PostgreSQL)'],
+        connected_apis: ['Stripe Gateway (External)'],
+        repositories: ['https://github.com/my-org/payment-service'],
+      };
+      setSelectedService(defaultDetail);
     } catch (err) {
       console.error('Failed to initialize graph:', err);
     } finally {
@@ -200,7 +244,6 @@ export const DependencyGraphPage: React.FC = () => {
     loadGraph();
   }, [loadGraph]);
 
-  // Handle Node Click to show details
   const onNodeClick = async (_: React.MouseEvent, node: Node) => {
     const serviceName = node.data.label as string;
     try {
@@ -214,12 +257,14 @@ export const DependencyGraphPage: React.FC = () => {
           .filter((e) => e.target === node.id)
           .map((e) => e.source),
         downstream_dependencies: edges
-          .filter((e) => e.source === node.id && e.target !== 'payments-db')
+          .filter((e) => e.source === node.id && !e.target.includes('db') && !e.target.includes('api'))
           .map((e) => e.target),
         connected_databases: edges
           .filter((e) => e.source === node.id && e.target.includes('db'))
           .map((e) => e.target),
-        connected_apis: [],
+        connected_apis: edges
+          .filter((e) => e.source === node.id && e.target.includes('api'))
+          .map((e) => e.target),
         repositories: [`https://github.com/my-org/${serviceName}`],
       }));
       setSelectedService(detail);
@@ -229,7 +274,6 @@ export const DependencyGraphPage: React.FC = () => {
     }
   };
 
-  // Calculate Blast Radius
   const handleCalculateBlastRadius = async () => {
     if (!selectedService) return;
     try {
@@ -246,7 +290,7 @@ export const DependencyGraphPage: React.FC = () => {
           ...selectedService.downstream_dependencies,
         ],
         impacted_databases: selectedService.connected_databases,
-        impacted_apis: [],
+        impacted_apis: selectedService.connected_apis,
         dependency_chains: [
           [...selectedService.upstream_dependencies, selectedService.name],
         ],
@@ -254,7 +298,7 @@ export const DependencyGraphPage: React.FC = () => {
 
       setBlastRadius(radius);
 
-      // Highlight impacted nodes on canvas
+      // Highlight impacted nodes
       setNodes((nds) =>
         nds.map((n) => {
           const isAffected =
@@ -280,15 +324,16 @@ export const DependencyGraphPage: React.FC = () => {
     if (!newServiceName.trim()) return;
 
     try {
-      await api.registerService({
+      await api.createService({
         name: newServiceName.trim(),
         tier: newServiceTier,
-      });
+        environment: 'production',
+      }).catch(() => null);
 
       const newNode: Node = {
-        id: newServiceName.trim(),
+        id: newServiceName.trim().toLowerCase().replace(/\s+/g, '-'),
         type: 'serviceNode',
-        position: { x: 300, y: 200 },
+        position: { x: 250 + Math.random() * 100, y: 220 + Math.random() * 80 },
         data: { label: newServiceName.trim(), tier: newServiceTier, type: 'service' },
       };
 
@@ -301,41 +346,43 @@ export const DependencyGraphPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto h-[calc(100vh-64px)] flex flex-col">
-      {/* Header Controls */}
-      <div className="flex items-center justify-between flex-wrap gap-4 shrink-0">
+    <div className="space-y-6 animate-fade-in flex flex-col h-[calc(100vh-130px)] pb-4">
+      {/* Top Controls Bar */}
+      <div className="flex items-center justify-between flex-wrap gap-4 shrink-0 bg-white/80 backdrop-blur-md p-4 rounded-3xl border border-ivory-200 shadow-tactile-surface">
         <div className="flex items-center gap-3">
-          <Badge variant={graphHealthy ? 'success' : 'default'}>
-            {graphHealthy ? 'Neo4j Bolt Connected' : 'Neo4j Offline (Cached Topology)'}
+          <Badge variant={graphHealthy ? 'gold' : 'default'} dot>
+            {graphHealthy ? 'Neo4j Connected' : 'Cached Topology'}
           </Badge>
-          <span className="text-xs text-slate-400 font-mono">
-            {nodes.length} Nodes • {edges.length} Directed Relationships
+          <div className="h-4 w-[1px] bg-ivory-300 hidden sm:block" />
+          <span className="text-xs font-mono text-midnight-600 font-medium">
+            <strong className="text-midnight-950 font-bold">{nodes.length}</strong> Services & Databases • <strong className="text-midnight-950 font-bold">{edges.length}</strong> Active Connections
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
+        <div className="flex items-center gap-2.5">
+          <Button3D
+            variant="surface"
+            size="sm"
             onClick={() => setShowAddServiceModal(true)}
-            className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-mono transition-colors flex items-center gap-1.5"
+            icon={<Plus className="w-3.5 h-3.5 text-electric-600" />}
           >
-            <Plus className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Add Service</span>
-          </button>
+            Add Service
+          </Button3D>
 
           <button
             onClick={loadGraph}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700 transition-colors"
-            title="Reset layout"
+            className="p-2.5 rounded-2xl bg-white hover:bg-ivory-100 text-midnight-600 hover:text-midnight-950 border border-ivory-200 transition-colors shadow-tactile-surface"
+            title="Reset Graph Layout"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-electric-600' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* Main Flow Canvas and Side-Panel */}
+      {/* Main Graph Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
-        {/* Interactive React Flow Canvas */}
-        <div className="lg:col-span-2 bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden relative shadow-inner">
+        {/* React Flow Canvas (Left 2/3) */}
+        <div className="lg:col-span-2 bg-gradient-to-b from-ivory-50/60 to-ivory-100/30 border border-ivory-200 rounded-3xl overflow-hidden relative shadow-tactile-surface">
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -345,131 +392,142 @@ export const DependencyGraphPage: React.FC = () => {
             nodeTypes={nodeTypes}
             fitView
           >
-            <Background color="#1e293b" gap={16} />
-            <Controls className="!bg-slate-900 !border-slate-800 !text-slate-300" />
+            <Background color="#cbd5e1" gap={24} size={1.2} />
+            <Controls className="!bg-white !border-ivory-200 !text-midnight-800 !shadow-tactile-surface !rounded-2xl overflow-hidden" />
             <MiniMap
-              nodeColor={(n) => (n.data.type === 'database' ? '#10b981' : '#6366f1')}
-              className="!bg-dark-900 !border-slate-800"
+              nodeColor={(n) => (n.data.type === 'database' ? '#10B981' : n.data.type === 'api' ? '#C5A059' : '#0066FF')}
+              className="!bg-white !border-ivory-200 !rounded-2xl !shadow-tactile-surface"
             />
           </ReactFlow>
         </div>
 
-        {/* Node Inspection & Blast Radius Panel */}
-        <div className="space-y-4 overflow-y-auto">
+        {/* Selected Service Information & Blast Radius Panel (Right 1/3) */}
+        <div className="space-y-4 overflow-y-auto pr-1">
           {selectedService ? (
             <Card
+              surface="porcelain"
               title={selectedService.name}
-              subtitle="Microservice topology properties & connections"
+              subtitle="Service telemetry, upstream callers, and failure impact"
+              icon={<Server className="w-5 h-5 text-electric-600" />}
+              className="border border-ivory-200 shadow-tactile-surface"
             >
               <div className="space-y-4 mt-2">
                 <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-slate-400">Environment:</span>
-                  <Badge variant="purple">{selectedService.environment}</Badge>
+                  <span className="text-midnight-500 font-medium">Cluster Environment:</span>
+                  <Badge variant="gold" size="sm">{selectedService.environment}</Badge>
                 </div>
 
                 <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-slate-400">Architecture Tier:</span>
-                  <span className="text-white font-bold capitalize">
+                  <span className="text-midnight-500 font-medium">Architecture Tier:</span>
+                  <span className="font-bold text-midnight-950 uppercase tracking-wide">
                     {selectedService.tier || 'backend'}
                   </span>
                 </div>
 
                 {/* Callers (Upstream) */}
-                <div>
-                  <span className="text-[11px] font-mono text-slate-400 block mb-1">
+                <div className="p-3.5 bg-ivory-50 rounded-2xl border border-ivory-200">
+                  <span className="text-xs font-display font-semibold text-midnight-900 block mb-2">
                     Upstream Callers ({selectedService.upstream_dependencies.length}):
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {selectedService.upstream_dependencies.length > 0 ? (
                       selectedService.upstream_dependencies.map((u) => (
-                        <Badge key={u} variant="purple">
+                        <Badge key={u} variant="purple" size="sm">
                           {u}
                         </Badge>
                       ))
                     ) : (
-                      <span className="text-xs text-slate-500 font-mono">None (Edge Service)</span>
+                      <span className="text-xs text-midnight-400 font-mono">None (Edge Entrypoint)</span>
                     )}
                   </div>
                 </div>
 
                 {/* Callees (Downstream) */}
-                <div>
-                  <span className="text-[11px] font-mono text-slate-400 block mb-1">
+                <div className="p-3.5 bg-ivory-50 rounded-2xl border border-ivory-200">
+                  <span className="text-xs font-display font-semibold text-midnight-900 block mb-2">
                     Downstream Dependencies ({selectedService.downstream_dependencies.length}):
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {selectedService.downstream_dependencies.length > 0 ? (
                       selectedService.downstream_dependencies.map((d) => (
-                        <Badge key={d} variant="info">
+                        <Badge key={d} variant="info" size="sm">
                           {d}
                         </Badge>
                       ))
                     ) : (
-                      <span className="text-xs text-slate-500 font-mono">None</span>
+                      <span className="text-xs text-midnight-400 font-mono">None</span>
                     )}
                   </div>
                 </div>
 
                 {/* Connected Databases */}
-                <div>
-                  <span className="text-[11px] font-mono text-slate-400 block mb-1">
-                    Connected Databases:
+                <div className="p-3.5 bg-ivory-50 rounded-2xl border border-ivory-200">
+                  <span className="text-xs font-display font-semibold text-midnight-900 block mb-2">
+                    Connected Datastores:
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {selectedService.connected_databases.length > 0 ? (
                       selectedService.connected_databases.map((db) => (
-                        <Badge key={db} variant="success">
+                        <Badge key={db} variant="success" size="sm">
                           {db}
                         </Badge>
                       ))
                     ) : (
-                      <span className="text-xs text-slate-500 font-mono">None</span>
+                      <span className="text-xs text-midnight-400 font-mono">No direct database handle</span>
                     )}
                   </div>
                 </div>
 
-                {/* Blast Radius Action */}
-                <div className="pt-3 border-t border-slate-800">
-                  <button
+                {/* Calculate Blast Radius Action */}
+                <div className="pt-2">
+                  <Button3D
+                    variant="gold"
+                    size="md"
                     onClick={handleCalculateBlastRadius}
-                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-bold text-xs shadow-md shadow-rose-900/30 transition-all flex items-center justify-center gap-2 font-mono"
+                    className="w-full"
+                    icon={<ShieldAlert className="w-4 h-4 text-midnight-950" />}
                   >
-                    <ShieldAlert className="w-4 h-4" />
-                    <span>Calculate Failure Blast Radius</span>
-                  </button>
+                    Calculate Blast Radius
+                  </Button3D>
                 </div>
 
-                {/* Blast Radius Result Banner */}
+                {/* Blast Radius Result */}
                 {blastRadius && (
-                  <div className="p-4 bg-slate-950 rounded-xl border border-rose-900/60 space-y-3 animate-fadeIn">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-[10px] font-mono text-slate-400">Cascade Risk Score</span>
-                        <div className="text-xl font-extrabold text-rose-400">
-                          {blastRadius.blast_radius_score}
+                  <MotionReveal direction="up" delay={0.05}>
+                    <div className="p-5 rounded-2xl bg-midnight-950 text-white border border-rose-500/40 shadow-tactile-dark space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-rose-300">
+                            Cascade Risk Score
+                          </span>
+                          <div className="text-2xl font-display font-extrabold text-white mt-0.5">
+                            {blastRadius.blast_radius_score}
+                          </div>
+                        </div>
+                        <Badge variant="danger" size="sm">{blastRadius.severity_level} IMPACT</Badge>
+                      </div>
+
+                      <div className="text-xs text-midnight-300 font-mono space-y-1.5 pt-3 border-t border-white/10">
+                        <div className="flex justify-between">
+                          <span>Direct Dependents:</span>
+                          <strong className="text-white font-bold">{blastRadius.direct_dependents_count}</strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Total Cascade Scope:</span>
+                          <strong className="text-gold-400 font-bold">{blastRadius.total_impacted_services_count} services</strong>
                         </div>
                       </div>
-                      <Badge variant="danger">{blastRadius.severity_level} IMPACT</Badge>
                     </div>
-
-                    <div className="text-xs font-mono space-y-1 text-slate-300">
-                      <div>
-                        Direct Callers: <span className="text-white font-bold">{blastRadius.direct_dependents_count}</span>
-                      </div>
-                      <div>
-                        Total Impact Scope: <span className="text-white font-bold">{blastRadius.total_impacted_services_count} services</span>
-                      </div>
-                    </div>
-                  </div>
+                  </MotionReveal>
                 )}
               </div>
             </Card>
           ) : (
-            <Card className="text-center py-12">
-              <Network className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-              <h4 className="text-xs font-bold text-slate-300">No Service Selected</h4>
-              <p className="text-xs text-slate-500 font-mono mt-1">
-                Click any service node on the canvas to inspect dependencies and calculate cascade impact.
+            <Card surface="porcelain" className="text-center py-16 border border-ivory-200">
+              <Network className="w-10 h-10 text-midnight-300 mx-auto mb-3" />
+              <h4 className="text-sm font-display font-bold text-midnight-950">No Service Selected</h4>
+              <p className="text-xs text-midnight-500 mt-1 max-w-xs mx-auto">
+                Select any microservice node on the topology canvas to inspect callers, downstream dependencies, and cascade failure risk.
               </p>
             </Card>
           )}
@@ -478,50 +536,62 @@ export const DependencyGraphPage: React.FC = () => {
 
       {/* Add Service Modal */}
       {showAddServiceModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-dark-900 border border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <h3 className="text-sm font-bold text-white font-mono mb-4">Register Microservice</h3>
+        <div className="fixed inset-0 z-50 bg-midnight-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-ivory-200 rounded-3xl p-7 w-full max-w-md shadow-tactile-dark animate-slide-down">
+            <h3 className="text-lg font-display font-bold text-midnight-950 mb-1">
+              Add Microservice to Graph
+            </h3>
+            <p className="text-xs text-midnight-600 mb-5">
+              Register a new microservice entity into the Neo4j Knowledge Graph topology.
+            </p>
+
             <form onSubmit={handleAddService} className="space-y-4">
               <div>
-                <label className="block text-xs font-mono text-slate-300 mb-1">Service Name *</label>
+                <label className="block text-xs font-semibold text-midnight-800 mb-1.5">
+                  Service Name <span className="text-rose-500">*</span>
+                </label>
                 <input
                   type="text"
                   value={newServiceName}
                   onChange={(e) => setNewServiceName(e.target.value)}
                   placeholder="e.g. notification-service"
                   required
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 font-mono focus:outline-none focus:border-cyan-500"
+                  className="w-full bg-white border border-ivory-300 rounded-2xl px-4 py-2.5 text-xs text-midnight-950 placeholder-midnight-400 focus:outline-none focus:ring-2 focus:ring-electric-500/20 focus:border-electric-600 transition-all font-mono font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-slate-300 mb-1">Architecture Tier</label>
+                <label className="block text-xs font-semibold text-midnight-800 mb-1.5">
+                  Architecture Tier
+                </label>
                 <select
                   value={newServiceTier}
                   onChange={(e) => setNewServiceTier(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 font-mono focus:outline-none focus:border-cyan-500"
+                  className="w-full bg-white border border-ivory-300 rounded-2xl px-4 py-2.5 text-xs text-midnight-950 focus:outline-none focus:ring-2 focus:ring-electric-500/20 focus:border-electric-600 transition-all font-medium"
                 >
-                  <option value="frontend">frontend</option>
-                  <option value="backend">backend</option>
-                  <option value="core">core</option>
-                  <option value="storage">storage</option>
+                  <option value="frontend">Frontend Service</option>
+                  <option value="backend">Backend Microservice</option>
+                  <option value="core">Core Platform Service</option>
+                  <option value="storage">Database / Storage</option>
                 </select>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-ivory-200">
+                <Button3D
+                  variant="ghost"
+                  size="sm"
                   type="button"
                   onClick={() => setShowAddServiceModal(false)}
-                  className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-mono hover:bg-slate-700"
                 >
                   Cancel
-                </button>
-                <button
+                </Button3D>
+                <Button3D
+                  variant="primary"
+                  size="sm"
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold font-mono"
                 >
-                  Add Node
-                </button>
+                  Add Service
+                </Button3D>
               </div>
             </form>
           </div>
@@ -530,4 +600,3 @@ export const DependencyGraphPage: React.FC = () => {
     </div>
   );
 };
-

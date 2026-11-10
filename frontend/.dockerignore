@@ -1,0 +1,30 @@
+# ==============================================================================
+# Docker Ignore - Frontend Service Context
+# ==============================================================================
+
+# Node Dependencies & Bundles (Clean build will run npm ci inside container)
+node_modules/
+dist/
+build/
+.npm/
+.yarn/
+
+# Test Artifacts & Playwright Reports
+playwright-report/
+test-results/
+.playwright/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Git & IDE Metadata
+.git/
+.gitignore
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+

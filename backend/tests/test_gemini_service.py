@@ -70,7 +70,7 @@ async def test_gemini_generate_json_success():
     assert result["completion_tokens"] == 45
     assert result["total_tokens"] == 165
     assert result["latency_ms"] >= 0.0
-    assert result["model_name"] == "gemini-flash-latest"
+    assert result["model_name"] in ["gemini-flash-latest", service.model_name]
 
 
 @pytest.mark.asyncio

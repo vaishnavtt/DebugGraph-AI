@@ -13,7 +13,9 @@ psycopg2-binary>=2.9.9
 alembic>=1.13.1
 neo4j>=5.18.0
 
-# Vector Database & Embeddings
+# Vector Database & Embeddings (CPU-only PyTorch index to avoid multi-GB CUDA wheels)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.2.0
 sentence-transformers>=3.0.0
 qdrant-client>=1.9.0
 rank-bm25>=0.2.2

@@ -66,11 +66,15 @@ export interface SupportingEvidenceItem {
 }
 
 export interface RecommendedAction {
-  priority: number;
+  priority: number | string;
   action: string;
   category: string;
   rationale: string;
   safety_warning?: string | null;
+  title?: string;
+  action_type?: string;
+  description?: string;
+  command_snippet?: string;
 }
 
 export interface EvidenceSufficiency {

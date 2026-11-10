@@ -105,7 +105,7 @@ flowchart TD
     Report --> WebConsole
 ```
 
-For detailed architectural specifications, data flows, and entity-relationship models, see [`docs/ARCHITECTURE.md`](file:///c:/Users/thott/Desktop/DebugGraph%20AI/docs/ARCHITECTURE.md).
+For detailed architectural specifications, data flows, and entity-relationship models, see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ---
 

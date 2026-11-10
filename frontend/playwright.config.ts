@@ -7,7 +7,7 @@ export default defineConfig({
     timeout: 15000,
   },
   use: {
-    baseURL: 'http://127.0.0.1:5173',
+    baseURL: process.env.BASE_URL || 'http://127.0.0.1:3000',
     trace: 'on-first-retry',
     headless: true,
   },

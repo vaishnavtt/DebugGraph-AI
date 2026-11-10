@@ -1,0 +1,54 @@
+# ==============================================================================
+# Docker Ignore - Backend Service Context
+# ==============================================================================
+
+# Virtual Environments (Over 1 GB on host!)
+.venv/
+venv/
+env/
+ENV/
+.env/
+
+# Python Bytecode & Caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Local Databases & Persistent Storage
+*.db
+*.sqlite
+*.sqlite3
+debuggraph_local.db
+qdrant_storage/
+qdrant_local_storage/
+
+# Environment Variables & Secrets (Preserve .env.example)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Git & IDE Metadata
+.git/
+.gitignore
+.gitattributes
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs & Temporary Files
+*.log
+logs/
+tmp/
+temp/
+

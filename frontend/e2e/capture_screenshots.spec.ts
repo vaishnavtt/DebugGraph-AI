@@ -160,10 +160,10 @@ test.describe('DebugGraph AI — Capture High-Resolution Portfolio Screenshots',
     });
 
     await page.getByRole('button', { name: /Execute Multi-Agent RCA/i }).click();
-    await expect(page.getByText(/Critical payment pipeline degradation/i)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/Critical payment pipeline degradation/i).first()).toBeVisible({ timeout: 15000 });
     
     // Switch to 7-Agent Trace tab
-    const timelineTab = page.getByRole('button', { name: /Trace/i });
+    const timelineTab = page.getByRole('button', { name: /Trace/i }).first();
     await expect(timelineTab).toBeVisible({ timeout: 5000 });
     await timelineTab.click();
     await page.waitForTimeout(800);

@@ -1,13 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavTab } from './Sidebar';
-import { Activity, Bell, ExternalLink, RefreshCw, Terminal } from 'lucide-react';
+import {
+  Activity,
+  ChevronRight,
+  ExternalLink,
+  Menu,
+  Plus,
+  RefreshCw,
+  Sparkles,
+} from 'lucide-react';
 import { Badge } from '../ui/Badge';
+import { Button3D } from '../ui/Button3D';
 
 interface HeaderProps {
   activeTab: NavTab;
   onRefresh?: () => void;
   isRefreshing?: boolean;
   onQuickInvestigate?: () => void;
+  onOpenMobileMenu?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -15,101 +25,157 @@ export const Header: React.FC<HeaderProps> = ({
   onRefresh,
   isRefreshing = false,
   onQuickInvestigate,
+  onOpenMobileMenu,
 }) => {
-  const titles: Record<NavTab, { title: string; subtitle: string }> = {
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight > 0) {
+        setScrollProgress(Math.min(100, Math.max(0, (window.scrollY / totalHeight) * 100)));
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const titles: Record<NavTab, { title: string; subtitle: string; breadcrumb: string }> = {
     overview: {
       title: 'Operations Dashboard',
-      subtitle: 'Real-time telemetry, knowledge graph status, and incident pipeline',
+      subtitle: 'System telemetry, recent investigations, and real-time infrastructure readiness',
+      breadcrumb: 'Overview',
     },
     investigations: {
-      title: 'Incident Investigation Workspace',
-      subtitle: 'Multi-agent RCA powered by LangGraph, Gemini, and Hybrid Retrieval',
+      title: 'Incident Investigations',
+      subtitle: 'Ask what went wrong and investigate incidents using multi-agent AI and verified log evidence',
+      breadcrumb: 'Investigations',
     },
     logs: {
-      title: 'Log Ingestion & Hybrid Explorer',
-      subtitle: 'Dense vector search, BM25 keyword matching, and cross-encoder reranking',
+      title: 'Log Explorer & Upload',
+      subtitle: 'Upload application logs and perform hybrid keyword + semantic search',
+      breadcrumb: 'Logs',
     },
     graph: {
       title: 'Service Dependency Graph & Blast Radius',
-      subtitle: 'Neo4j topology mapping, upstream/downstream impact, and cascade isolation',
+      subtitle: 'Interactive map of microservices, databases, and failure blast radius',
+      breadcrumb: 'Service Graph',
     },
     github: {
-      title: 'GitHub Repository & Commit Intelligence',
-      subtitle: 'Recent commits, file diff inspection, and non-speculative incident correlation',
+      title: 'GitHub Intelligence & Code Changes',
+      subtitle: 'Correlate recent git commits and code diffs with production incident errors',
+      breadcrumb: 'GitHub',
     },
     evaluation: {
-      title: 'Evaluation & Benchmarking Engine',
-      subtitle: 'Recall@k, MRR, NDCG@5, and multi-agent citation precision benchmarks',
+      title: 'Evaluation & Benchmarks',
+      subtitle: 'Measurement of search accuracy, citation precision, and evidence groundedness',
+      breadcrumb: 'Benchmarks',
     },
     settings: {
-      title: 'System Settings & Architecture Configuration',
-      subtitle: 'Vector DB, Neo4j, model parameters, and environment specifications',
+      title: 'Settings & Diagnostics',
+      subtitle: 'Configuration for AI models, databases, vector stores, and connections',
+      breadcrumb: 'Settings',
     },
   };
 
   const current = titles[activeTab] || titles.overview;
 
   return (
-    <header className="h-16 bg-dark-900/90 backdrop-blur-md border-b border-slate-800/80 px-6 flex items-center justify-between z-10 shrink-0">
-      <div>
-        <h2 className="text-base font-bold text-white flex items-center gap-2">
-          {current.title}
-          <Badge variant="purple" size="sm">
-            Production Ready
-          </Badge>
-        </h2>
-        <p className="text-xs text-slate-400 font-mono">{current.subtitle}</p>
-      </div>
+    <>
+      {/* Apple-style Top Scroll Progress Indicator */}
+      <div
+        className="fixed top-0 left-0 h-[2.5px] bg-gradient-to-r from-electric-500 via-gold-400 to-electric-600 z-50 transition-all duration-150"
+        style={{ width: `${scrollProgress}%` }}
+      />
 
-      <div className="flex items-center gap-3">
-        {onRefresh && (
+      <header className="h-18 bg-ivory-50/85 backdrop-blur-2xl border-b border-ivory-300/80 px-4 md:px-8 flex items-center justify-between z-20 shrink-0 sticky top-0 shadow-soft">
+        {/* Left: Mobile Menu Trigger & Breadcrumb / Page Title */}
+        <div className="flex items-center gap-3.5 min-w-0">
           <button
-            onClick={onRefresh}
-            disabled={isRefreshing}
-            className="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700 text-xs transition-colors flex items-center gap-1.5"
-            title="Refresh active view"
+            onClick={onOpenMobileMenu}
+            className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-ivory-200/60 md:hidden transition-colors"
+            title="Open Navigation Menu"
           >
-            <RefreshCw
-              className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-cyan-400' : ''}`}
-            />
-            <span className="hidden sm:inline font-mono">Refresh</span>
+            <Menu className="w-5 h-5" />
           </button>
-        )}
 
-        {onQuickInvestigate && activeTab !== 'investigations' && (
-          <button
-            onClick={onQuickInvestigate}
-            className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-medium text-xs shadow-md shadow-indigo-600/20 transition-all flex items-center gap-1.5 font-mono"
+          <div className="min-w-0">
+            {/* Breadcrumb with jewel divider */}
+            <div className="hidden sm:flex items-center gap-2 text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-0.5">
+              <span className="text-slate-400">DebugGraph AI</span>
+              <ChevronRight className="w-3 h-3 text-gold-500" />
+              <span className="text-slate-800 font-bold">{current.breadcrumb}</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <h2 className="text-base md:text-lg font-extrabold text-slate-950 truncate tracking-tight">
+                {current.title}
+              </h2>
+              <Badge variant="success" size="sm" dot className="hidden md:inline-flex shadow-xs">
+                Production Ready
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Actions */}
+        <div className="flex items-center gap-3 shrink-0">
+          {/* Refresh Action */}
+          {onRefresh && (
+            <Button3D
+              variant="surface"
+              size="sm"
+              onClick={onRefresh}
+              disabled={isRefreshing}
+              icon={
+                <RefreshCw
+                  className={`w-3.5 h-3.5 text-slate-500 ${isRefreshing ? 'animate-spin text-electric-500' : ''}`}
+                />
+              }
+              title="Refresh Telemetry"
+            >
+              <span className="hidden sm:inline">Refresh</span>
+            </Button3D>
+          )}
+
+          {/* Quick Investigation 3D Button */}
+          {onQuickInvestigate && activeTab !== 'investigations' && (
+            <Button3D
+              variant="primary"
+              size="sm"
+              onClick={onQuickInvestigate}
+              icon={<Plus className="w-3.5 h-3.5 text-white" />}
+            >
+              <span>New Investigation</span>
+            </Button3D>
+          )}
+
+          <div className="hidden sm:block h-5 w-px bg-ivory-300" />
+
+          {/* Health Probe link */}
+          <a
+            href="/api/v1/health"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-2 rounded-xl text-slate-500 hover:text-electric-600 hover:bg-electric-50 transition-colors"
+            title="Live Subsystem Health Probe"
           >
-            <Terminal className="w-3.5 h-3.5" />
-            <span>New Investigation</span>
-          </button>
-        )}
+            <Activity className="w-4 h-4" />
+          </a>
 
-        <div className="h-6 w-px bg-slate-800" />
-
-        <a
-          href="/api/v1/health"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-slate-400 hover:text-slate-200 border border-slate-700 transition-colors"
-          title="Open API Health Probe"
-        >
-          <Activity className="w-3.5 h-3.5" />
-        </a>
-
-        <a
-          href="/docs"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700 text-xs transition-colors font-mono"
-          title="Swagger OpenAPI Docs"
-        >
-          <span>API Docs</span>
-          <ExternalLink className="w-3 h-3 text-slate-400" />
-        </a>
-      </div>
-    </header>
+          {/* Swagger OpenAPI Docs */}
+          <a
+            href="/docs"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-slate-600 hover:text-electric-600 hover:bg-electric-50 text-xs font-semibold transition-colors border border-transparent hover:border-electric-200"
+            title="Swagger OpenAPI Documentation"
+          >
+            <span>API Docs</span>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+          </a>
+        </div>
+      </header>
+    </>
   );
 };
-

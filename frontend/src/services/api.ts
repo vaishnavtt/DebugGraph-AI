@@ -102,6 +102,12 @@ class ApiClient {
     return this.request<any>('/indexing/status');
   }
 
+  async indexLogChunks(ingestionId: string): Promise<any> {
+    return this.request<any>(`/indexing/${encodeURIComponent(ingestionId)}`, {
+      method: 'POST',
+    });
+  }
+
   async searchHybrid(query: string, serviceName?: string, topK: number = 10): Promise<any> {
     return this.request<any>('/search/hybrid', {
       method: 'POST',
@@ -150,6 +156,15 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(payload),
     });
+  }
+
+  async createService(payload: {
+    name: string;
+    environment?: string;
+    tier?: string;
+    team?: string;
+  }): Promise<any> {
+    return this.registerService(payload);
   }
 
   async registerDependency(payload: {

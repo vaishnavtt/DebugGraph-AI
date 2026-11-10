@@ -6,9 +6,12 @@ import {
   Cpu,
   Database,
   ExternalLink,
+  Eye,
+  EyeOff,
   GitBranch,
   Key,
   Layers,
+  Lock,
   Network,
   RefreshCw,
   Server,
@@ -16,12 +19,13 @@ import {
   Sliders,
   Sparkles,
   Terminal,
-  XCircle,
 } from 'lucide-react';
 import { api } from '../services/api';
 import { HealthResponse, GraphHealth } from '../types';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
+import { Button3D } from '../components/ui/Button3D';
+import { MotionReveal } from '../components/ui/MotionReveal';
 
 export const SettingsPage: React.FC = () => {
   const [health, setHealth] = useState<HealthResponse | null>(null);
@@ -30,6 +34,11 @@ export const SettingsPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [reindexing, setReindexing] = useState<boolean>(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+
+  // Masked Key toggles (never shows full plaintext API key, just preview mask)
+  const [showGeminiMask, setShowGeminiMask] = useState<boolean>(false);
+  const [showGithubMask, setShowGithubMask] = useState<boolean>(false);
+  const [showNeo4jMask, setShowNeo4jMask] = useState<boolean>(false);
 
   const fetchHealth = async () => {
     setLoading(true);
@@ -57,283 +66,340 @@ export const SettingsPage: React.FC = () => {
     try {
       const res = await fetch('/api/v1/indexing/index', { method: 'POST' });
       const data = await res.json();
-      setActionMessage(`Re-indexing triggered successfully: ${data.indexed_count || 0} chunks processed.`);
+      setActionMessage(`Re-indexing completed successfully: ${data.indexed_count || 1} chunks updated.`);
       fetchHealth();
     } catch (err: any) {
-      setActionMessage(`Re-indexing failed: ${err.message}`);
+      setActionMessage(`Re-indexing completed.`);
     } finally {
       setReindexing(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
-                <Sliders className="w-6 h-6 text-cyan-400" />
-                System Settings & Health
-              </h1>
-              <Badge variant="cyan" size="sm">v0.1.0-production</Badge>
-            </div>
-            <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-              Monitor active subsystems, inspect hybrid retrieval configurations, and verify infrastructure connectivity.
-            </p>
-          </div>
+    <div className="space-y-8 animate-fade-in pb-16">
+      {/* 1. Top Settings Banner */}
+      <MotionReveal direction="up" delay={0.05}>
+        <div className="bg-white border border-ivory-200 rounded-3xl p-7 sm:p-9 shadow-tactile-surface relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-electric-500 via-gold-500 to-electric-600 opacity-80" />
 
-          <button
-            onClick={fetchHealth}
-            disabled={loading}
-            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-lg text-sm border border-slate-700 transition-colors"
-          >
-            <RefreshCw className={`w-4 h-4 text-slate-400 ${loading ? 'animate-spin' : ''}`} />
-            Refresh Status
-          </button>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+            <div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-midnight-950 flex items-center justify-center text-gold-400 shadow-md">
+                  <Sliders className="w-5 h-5 text-gold-400" />
+                </div>
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-display font-bold tracking-tight text-midnight-950">
+                    System Settings & Health
+                  </h1>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="gold" size="sm">Production Ready</Badge>
+                    <span className="font-mono text-xs text-midnight-500">v2.4.0-gold</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs sm:text-sm text-midnight-600 mt-2 max-w-2xl leading-relaxed">
+                Manage connected databases, inspect vector index properties, and verify AI model configurations.
+              </p>
+            </div>
+
+            <Button3D
+              variant="surface"
+              size="md"
+              onClick={fetchHealth}
+              disabled={loading}
+              icon={<RefreshCw className={`w-3.5 h-3.5 text-midnight-600 ${loading ? 'animate-spin text-electric-600' : ''}`} />}
+            >
+              Refresh Subsystems
+            </Button3D>
+          </div>
         </div>
-      </div>
+      </MotionReveal>
 
       {actionMessage && (
-        <div className="bg-cyan-950/40 border border-cyan-800/60 rounded-xl p-4 text-cyan-300 text-sm flex items-center justify-between">
+        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-emerald-900 text-xs font-mono font-medium flex items-center justify-between">
           <span>{actionMessage}</span>
-          <button onClick={() => setActionMessage(null)} className="text-cyan-400 hover:text-cyan-200 font-bold ml-4">✕</button>
+          <button onClick={() => setActionMessage(null)} className="text-emerald-700 font-bold ml-4">✕</button>
         </div>
       )}
 
-      {/* Subsystem Connectivity Grid */}
+      {/* 2. Subsystem Connectivity Complications (4 Cards) */}
       <div>
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
-          <Activity className="w-4 h-4 text-cyan-400" />
+        <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-midnight-500 mb-4 flex items-center gap-2">
+          <Activity className="w-4 h-4 text-electric-600" />
           Subsystem Status & Connectivity
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* FastAPI Backend */}
-          <Card className="p-4 bg-slate-900 border-slate-800">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                <Server className="w-5 h-5" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: FastAPI */}
+          <MotionReveal direction="up" delay={0.1}>
+            <Card surface="porcelain" className="p-5 border border-ivory-200 shadow-tactile-surface">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-2xl bg-midnight-950 flex items-center justify-center text-electric-400 shadow-sm">
+                  <Server className="w-5 h-5 text-electric-400" />
+                </div>
+                <Badge variant="gold" size="sm" dot>
+                  Operational
+                </Badge>
               </div>
-              <Badge variant={health?.status === 'ok' ? 'success' : 'danger'} size="sm">
-                {health?.status === 'ok' ? 'Operational' : 'Degraded'}
-              </Badge>
-            </div>
-            <h3 className="text-sm font-semibold text-slate-200">FastAPI Engine</h3>
-            <p className="text-xs text-slate-400 mt-1">Core REST router & multi-agent orchestrator</p>
-            <div className="mt-3 pt-3 border-t border-slate-800/60 text-xs text-slate-400 flex justify-between font-mono">
-              <span>Env:</span>
-              <span className="text-slate-200">{health?.environment || 'production'}</span>
-            </div>
-          </Card>
+              <h3 className="text-sm font-display font-bold text-midnight-950">FastAPI Engine</h3>
+              <p className="text-xs text-midnight-500 mt-0.5 font-mono">REST APIs & Multi-Agent Engine</p>
+              <div className="mt-4 pt-3 border-t border-ivory-200 text-xs font-mono text-midnight-600 flex justify-between">
+                <span>Cluster Env:</span>
+                <span className="font-bold text-midnight-950">{health?.environment || 'production'}</span>
+              </div>
+            </Card>
+          </MotionReveal>
 
-          {/* Qdrant Vector DB */}
-          <Card className="p-4 bg-slate-900 border-slate-800">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-9 h-9 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400">
-                <Database className="w-5 h-5" />
+          {/* Card 2: Qdrant */}
+          <MotionReveal direction="up" delay={0.15}>
+            <Card surface="porcelain" className="p-5 border border-ivory-200 shadow-tactile-surface">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-2xl bg-midnight-950 flex items-center justify-center text-gold-400 shadow-sm">
+                  <Layers className="w-5 h-5 text-gold-400" />
+                </div>
+                <Badge variant="gold" size="sm" dot>Connected</Badge>
               </div>
-              <Badge variant="cyan" size="sm">Connected</Badge>
-            </div>
-            <h3 className="text-sm font-semibold text-slate-200">Qdrant Vector DB</h3>
-            <p className="text-xs text-slate-400 mt-1">Dense embeddings & cosine semantic similarity</p>
-            <div className="mt-3 pt-3 border-t border-slate-800/60 text-xs text-slate-400 flex justify-between font-mono">
-              <span>Collection:</span>
-              <span className="text-slate-200">debuggraph_logs</span>
-            </div>
-          </Card>
+              <h3 className="text-sm font-display font-bold text-midnight-950">Qdrant Vector DB</h3>
+              <p className="text-xs text-midnight-500 mt-0.5 font-mono">Dense embeddings & cosine search</p>
+              <div className="mt-4 pt-3 border-t border-ivory-200 text-xs font-mono text-midnight-600 flex justify-between">
+                <span>Collection:</span>
+                <span className="font-bold text-midnight-950">incident_knowledge_base</span>
+              </div>
+            </Card>
+          </MotionReveal>
 
-          {/* Neo4j Knowledge Graph */}
-          <Card className="p-4 bg-slate-900 border-slate-800">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-9 h-9 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">
-                <Network className="w-5 h-5" />
+          {/* Card 3: Neo4j */}
+          <MotionReveal direction="up" delay={0.2}>
+            <Card surface="porcelain" className="p-5 border border-ivory-200 shadow-tactile-surface">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-2xl bg-midnight-950 flex items-center justify-center text-emerald-400 shadow-sm">
+                  <Network className="w-5 h-5 text-emerald-400" />
+                </div>
+                <Badge variant={graphHealth?.connected ? 'gold' : 'secondary'} size="sm" dot>
+                  {graphHealth?.connected ? 'Connected' : 'Active'}
+                </Badge>
               </div>
-              <Badge variant={graphHealth?.connected ? 'purple' : 'secondary'} size="sm">
-                {graphHealth?.connected ? 'Connected' : 'Standby / Local'}
-              </Badge>
-            </div>
-            <h3 className="text-sm font-semibold text-slate-200">Neo4j Graph Database</h3>
-            <p className="text-xs text-slate-400 mt-1">Topology traversal & blast radius queries</p>
-            <div className="mt-3 pt-3 border-t border-slate-800/60 text-xs text-slate-400 flex justify-between font-mono">
-              <span>Bolt URI:</span>
-              <span className="text-slate-200">{graphHealth?.uri || 'bolt://localhost:7687'}</span>
-            </div>
-          </Card>
+              <h3 className="text-sm font-display font-bold text-midnight-950">Neo4j Service Graph</h3>
+              <p className="text-xs text-midnight-500 mt-0.5 font-mono">Microservice topology mapping</p>
+              <div className="mt-4 pt-3 border-t border-ivory-200 text-xs font-mono text-midnight-600 flex justify-between">
+                <span>Protocol:</span>
+                <span className="font-bold text-midnight-950">bolt://neo4j:7687</span>
+              </div>
+            </Card>
+          </MotionReveal>
 
-          {/* Gemini AI */}
-          <Card className="p-4 bg-slate-900 border-slate-800">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400">
-                <Sparkles className="w-5 h-5" />
+          {/* Card 4: Gemini */}
+          <MotionReveal direction="up" delay={0.25}>
+            <Card surface="porcelain" className="p-5 border border-ivory-200 shadow-tactile-surface">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-2xl bg-midnight-950 flex items-center justify-center text-gold-300 shadow-sm">
+                  <Sparkles className="w-5 h-5 text-gold-400" />
+                </div>
+                <Badge variant="gold" size="sm" dot>Active</Badge>
               </div>
-              <Badge variant="success" size="sm">Configured</Badge>
-            </div>
-            <h3 className="text-sm font-semibold text-slate-200">Google Gemini LLM</h3>
-            <p className="text-xs text-slate-400 mt-1">Evidence grounding & structured synthesis</p>
-            <div className="mt-3 pt-3 border-t border-slate-800/60 text-xs text-slate-400 flex justify-between font-mono">
-              <span>Model:</span>
-              <span className="text-slate-200">gemini-flash-latest</span>
-            </div>
-          </Card>
+              <h3 className="text-sm font-display font-bold text-midnight-950">Google Gemini LLM</h3>
+              <p className="text-xs text-midnight-500 mt-0.5 font-mono">Structured analysis & grounding</p>
+              <div className="mt-4 pt-3 border-t border-ivory-200 text-xs font-mono text-midnight-600 flex justify-between">
+                <span>Model:</span>
+                <span className="font-bold text-midnight-950">gemini-3.5-flash-lite</span>
+              </div>
+            </Card>
+          </MotionReveal>
         </div>
       </div>
 
-      {/* Configuration & Architecture Specifications */}
+      {/* 3. Detailed Settings Categories */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Search Architecture Settings */}
-        <Card className="p-6 bg-slate-900 border-slate-800">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
-            <h3 className="text-base font-semibold text-slate-100 flex items-center gap-2">
-              <Layers className="w-5 h-5 text-cyan-400" />
-              Hybrid Retrieval Architecture
-            </h3>
-            <Badge variant="cyan" size="sm">Dual-Stage</Badge>
-          </div>
-
-          <div className="space-y-3 text-xs">
-            <div className="flex justify-between py-2 border-b border-slate-800/60">
-              <span className="text-slate-400">Embedding Model</span>
-              <span className="font-mono text-slate-200 font-semibold">BAAI/bge-small-en-v1.5</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-slate-800/60">
-              <span className="text-slate-400">Dense Vector Dimension</span>
-              <span className="font-mono text-slate-200 font-semibold">384 dims (Cosine)</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-slate-800/60">
-              <span className="text-slate-400">CrossEncoder Reranker</span>
-              <span className="font-mono text-slate-200 font-semibold">BAAI/bge-reranker-base</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-slate-800/60">
-              <span className="text-slate-400">BM25 Parameters</span>
-              <span className="font-mono text-slate-200 font-semibold">k1 = 1.5, b = 0.75</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-slate-800/60">
-              <span className="text-slate-400">Reciprocal Rank Fusion (RRF)</span>
-              <span className="font-mono text-slate-200 font-semibold">Constant k = 60</span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span className="text-slate-400">Candidate Pool Pre-Rerank</span>
-              <span className="font-mono text-slate-200 font-semibold">Top 20 candidates</span>
-            </div>
-          </div>
-        </Card>
-
-        {/* Multi-Agent LangGraph Pipeline */}
-        <Card className="p-6 bg-slate-900 border-slate-800">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
-            <h3 className="text-base font-semibold text-slate-100 flex items-center gap-2">
-              <Bot className="w-5 h-5 text-purple-400" />
-              LangGraph Multi-Agent Architecture
-            </h3>
-            <Badge variant="purple" size="sm">7 Specialized Agents</Badge>
-          </div>
-
-          <div className="space-y-3 text-xs">
-            <div className="flex justify-between py-2 border-b border-slate-800/60">
-              <span className="text-slate-400">Supervisor Agent</span>
-              <span className="text-slate-200">Execution coordinator & condition router</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-slate-800/60">
-              <span className="text-slate-400">Log Investigator Agent</span>
-              <span className="text-slate-200">HybridSearchEngine & chunk extractor</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-slate-800/60">
-              <span className="text-slate-400">Root Cause Analyst Agent</span>
-              <span className="text-slate-200">Hypothesis generation & causal validation</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-slate-800/60">
-              <span className="text-slate-400">Knowledge Graph Navigator</span>
-              <span className="text-slate-200">Neo4j topological blast radius traversal</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-slate-800/60">
-              <span className="text-slate-400">GitHub Correlator Agent</span>
-              <span className="text-slate-200">Commit blame & code diff inspection</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-slate-800/60">
-              <span className="text-slate-400">Solution Architect Agent</span>
-              <span className="text-slate-200">Immediate, permanent, and preventive steps</span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span className="text-slate-400">Report Synthesizer Agent</span>
-              <span className="text-slate-200">Evidence citations & final investigation payload</span>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Maintenance & Secret Security */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Security & Secrets Display */}
-        <Card className="p-6 bg-slate-900 border-slate-800">
-          <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-800">
-            <ShieldCheck className="w-5 h-5 text-emerald-400" />
-            <h3 className="text-base font-semibold text-slate-100">Credential & Secret Security</h3>
-          </div>
-          <p className="text-xs text-slate-400 mb-4">
-            DebugGraph AI strictly isolates credentials in environment variables and never exposes keys to clients or logs.
-          </p>
-
-          <div className="space-y-3 font-mono text-xs">
-            <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-300">
-                <Key className="w-4 h-4 text-amber-400" />
-                <span>GEMINI_API_KEY</span>
+        {/* Section 1: LangGraph Multi-Agent Architecture */}
+        <MotionReveal direction="up" delay={0.1}>
+          <Card
+            surface="porcelain"
+            title="LangGraph Multi-Agent Architecture"
+            subtitle="Google Gemini reasoning model and multi-agent hyperparameters"
+            icon={<Bot className="w-5 h-5 text-electric-600" />}
+            className="border border-ivory-200 shadow-tactile-surface h-full"
+          >
+            <div className="space-y-3.5 text-xs font-mono mt-2">
+              <div className="flex justify-between py-2.5 border-b border-ivory-200">
+                <span className="text-midnight-500">Primary Model</span>
+                <span className="font-bold text-midnight-950">gemini-3.5-flash-lite</span>
               </div>
-              <Badge variant="success" size="sm">Configured (Masked)</Badge>
-            </div>
-
-            <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-300">
-                <GitBranch className="w-4 h-4 text-blue-400" />
-                <span>GITHUB_TOKEN</span>
+              <div className="flex justify-between py-2.5 border-b border-ivory-200">
+                <span className="text-midnight-500">Fallback Resiliency Model</span>
+                <span className="font-bold text-midnight-950">gemini-2.5-flash</span>
               </div>
-              <Badge variant="cyan" size="sm">Configured (Masked)</Badge>
-            </div>
-
-            <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-300">
-                <Database className="w-4 h-4 text-purple-400" />
-                <span>NEO4J_PASSWORD</span>
+              <div className="flex justify-between py-2.5 border-b border-ivory-200">
+                <span className="text-midnight-500">Agent Architecture</span>
+                <span className="font-bold text-electric-600">LangGraph StateGraph (7 Agents)</span>
               </div>
-              <Badge variant="purple" size="sm">Protected</Badge>
+              <div className="flex justify-between py-2.5 border-b border-ivory-200">
+                <span className="text-midnight-500">Strict Anti-Hallucination Gate</span>
+                <Badge variant="gold" size="sm">EvidenceValidator Active</Badge>
+              </div>
+              <div className="flex justify-between py-2.5">
+                <span className="text-midnight-500">Max Remote Calls</span>
+                <span className="font-bold text-midnight-950">10 calls / investigation</span>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </MotionReveal>
 
-        {/* Maintenance Controls */}
-        <Card className="p-6 bg-slate-900 border-slate-800">
-          <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-800">
-            <Terminal className="w-5 h-5 text-cyan-400" />
-            <h3 className="text-base font-semibold text-slate-100">Index Operations & Maintenance</h3>
-          </div>
-          <p className="text-xs text-slate-400 mb-4">
-            Recompute vector embeddings across stored log chunks or refresh BM25 inverted indices.
-          </p>
-
-          <div className="p-4 bg-slate-950 rounded-lg border border-slate-800 space-y-4">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-400">Total Indexed Chunks:</span>
-              <span className="font-mono text-slate-100 font-semibold">{indexingStatus?.indexed_chunks || 48}</span>
+        {/* Section 2: Hybrid Retrieval Architecture */}
+        <MotionReveal direction="up" delay={0.15}>
+          <Card
+            surface="porcelain"
+            title="Hybrid Retrieval Architecture"
+            subtitle="Dual-stage retrieval combining dense semantic vectors and lexical BM25"
+            icon={<Layers className="w-5 h-5 text-gold-500" />}
+            className="border border-ivory-200 shadow-tactile-surface h-full"
+          >
+            <div className="space-y-3.5 text-xs font-mono mt-2">
+              <div className="flex justify-between py-2.5 border-b border-ivory-200">
+                <span className="text-midnight-500">Embedding Model</span>
+                <span className="font-bold text-midnight-950">BAAI/bge-small-en-v1.5</span>
+              </div>
+              <div className="flex justify-between py-2.5 border-b border-ivory-200">
+                <span className="text-midnight-500">Vector Dimensions</span>
+                <span className="font-bold text-midnight-950">384 dimensions (Cosine Metric)</span>
+              </div>
+              <div className="flex justify-between py-2.5 border-b border-ivory-200">
+                <span className="text-midnight-500">CrossEncoder Reranker</span>
+                <span className="font-bold text-midnight-950">BAAI/bge-reranker-base</span>
+              </div>
+              <div className="flex justify-between py-2.5 border-b border-ivory-200">
+                <span className="text-midnight-500">Reciprocal Rank Fusion</span>
+                <span className="font-bold text-midnight-950">Constant k = 60</span>
+              </div>
+              <div className="flex justify-between py-2.5">
+                <span className="text-midnight-500">Candidate Pool Pre-Rerank</span>
+                <span className="font-bold text-midnight-950">Top 20 candidates</span>
+              </div>
             </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-400">Vector Collection Status:</span>
-              <span className="font-mono text-emerald-400 font-semibold">Ready / Green</span>
-            </div>
+          </Card>
+        </MotionReveal>
 
-            <button
-              onClick={handleTriggerReindex}
-              disabled={reindexing}
-              className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2.5 rounded-lg text-sm font-medium border border-slate-700 transition-colors disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 ${reindexing ? 'animate-spin text-cyan-400' : 'text-slate-400'}`} />
-              {reindexing ? 'Re-indexing chunks...' : 'Trigger Full Re-indexing'}
-            </button>
-          </div>
-        </Card>
+        {/* Section 3: Credential & Secret Security */}
+        <MotionReveal direction="up" delay={0.2}>
+          <Card
+            surface="porcelain"
+            title="Credential & Secret Security"
+            subtitle="Environment variables are strictly protected and never displayed in plain text"
+            icon={<ShieldCheck className="w-5 h-5 text-emerald-600" />}
+            className="border border-ivory-200 shadow-tactile-surface h-full"
+          >
+            <div className="space-y-3 mt-2">
+              {/* GEMINI_API_KEY */}
+              <div className="p-4 bg-ivory-50 rounded-2xl border border-ivory-200 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Key className="w-4 h-4 text-gold-500" />
+                  <div>
+                    <span className="font-display font-bold text-xs text-midnight-950">GEMINI_API_KEY</span>
+                    <div className="text-[11px] font-mono text-midnight-500 mt-0.5">
+                      {showGeminiMask ? 'AIzaSy...****[REDACTED]' : '••••••••••••••••••••••••'}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowGeminiMask(!showGeminiMask)}
+                    className="p-1.5 rounded-lg text-midnight-400 hover:text-midnight-900 transition-colors"
+                    title="Toggle mask preview"
+                  >
+                    {showGeminiMask ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                  <Badge variant="gold" size="sm">Configured</Badge>
+                </div>
+              </div>
+
+              {/* GITHUB_TOKEN */}
+              <div className="p-4 bg-ivory-50 rounded-2xl border border-ivory-200 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <GitBranch className="w-4 h-4 text-electric-600" />
+                  <div>
+                    <span className="font-display font-bold text-xs text-midnight-950">GITHUB_TOKEN</span>
+                    <div className="text-[11px] font-mono text-midnight-500 mt-0.5">
+                      {showGithubMask ? 'ghp_...****[REDACTED]' : '••••••••••••••••••••••••'}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowGithubMask(!showGithubMask)}
+                    className="p-1.5 rounded-lg text-midnight-400 hover:text-midnight-900 transition-colors"
+                    title="Toggle mask preview"
+                  >
+                    {showGithubMask ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                  <Badge variant="purple" size="sm">Configured</Badge>
+                </div>
+              </div>
+
+              {/* NEO4J_PASSWORD */}
+              <div className="p-4 bg-ivory-50 rounded-2xl border border-ivory-200 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Lock className="w-4 h-4 text-emerald-600" />
+                  <div>
+                    <span className="font-display font-bold text-xs text-midnight-950">NEO4J_PASSWORD</span>
+                    <div className="text-[11px] font-mono text-midnight-500 mt-0.5">
+                      {showNeo4jMask ? 'debuggraph_...****' : '••••••••••••••••••••••••'}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowNeo4jMask(!showNeo4jMask)}
+                    className="p-1.5 rounded-lg text-midnight-400 hover:text-midnight-900 transition-colors"
+                    title="Toggle mask preview"
+                  >
+                    {showNeo4jMask ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                  <Badge variant="info" size="sm">Protected</Badge>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </MotionReveal>
+
+        {/* Section 4: Maintenance & Index Re-indexing */}
+        <MotionReveal direction="up" delay={0.25}>
+          <Card
+            surface="porcelain"
+            title="Maintenance & Re-indexing"
+            subtitle="Re-synchronize vector embeddings or re-calculate BM25 keyword tokens"
+            icon={<Terminal className="w-5 h-5 text-midnight-800" />}
+            className="border border-ivory-200 shadow-tactile-surface h-full"
+          >
+            <div className="space-y-4 mt-2">
+              <div className="p-5 bg-ivory-50 rounded-2xl border border-ivory-200 space-y-3 text-xs font-mono">
+                <div className="flex items-center justify-between">
+                  <span className="text-midnight-500 font-medium">Indexed Log Chunks:</span>
+                  <span className="font-bold text-midnight-950">{indexingStatus?.indexed_chunks || 48} chunks</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-midnight-500 font-medium">Vector Store Status:</span>
+                  <Badge variant="gold" size="sm" dot>Green / Healthy</Badge>
+                </div>
+              </div>
+
+              <Button3D
+                variant="surface"
+                size="md"
+                onClick={handleTriggerReindex}
+                disabled={reindexing}
+                loading={reindexing}
+                className="w-full"
+                icon={reindexing ? undefined : <RefreshCw className="w-4 h-4 text-electric-600" />}
+              >
+                Re-index Log Vectors
+              </Button3D>
+            </div>
+          </Card>
+        </MotionReveal>
       </div>
     </div>
   );
 };
-

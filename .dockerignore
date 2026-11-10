@@ -1,0 +1,64 @@
+# ==============================================================================
+# Docker Ignore - Root Project Context
+# ==============================================================================
+
+# Git Repository & CI/CD
+.git/
+.github/
+.gitignore
+
+# Virtual Environments
+**/.venv/
+**/venv/
+**/env/
+**/ENV/
+
+# Node Dependencies & Static Builds
+**/node_modules/
+**/dist/
+**/build/
+.npm/
+.yarn/
+
+# Python Bytecode & Cache Directories
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+.coverage
+htmlcov/
+
+# Local Databases, Vector Stores & Mounted Volumes
+*.db
+*.sqlite
+*.sqlite3
+debuggraph_local.db
+qdrant_storage/
+qdrant_local_storage/
+neo4j_data/
+neo4j_logs/
+postgres_data/
+
+# Environment Secrets
+**/.env
+**/.env.local
+**/.env.*.local
+!**/.env.example
+
+# Test Results & Reports
+playwright-report/
+test-results/
+**/playwright-report/
+**/test-results/
+
+# Documentation Screenshots & Large Binary Assets (Not needed in images)
+docs/screenshots/
+
+# IDE & OS Metadata
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
